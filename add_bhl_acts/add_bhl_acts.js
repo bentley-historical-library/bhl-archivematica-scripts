@@ -9,7 +9,8 @@
 // ==/UserScript==
 
 var BHLPolicyDiv = document.createElement("div");
-var BHLPolicyLabel = document.createElement("label");
+BHLPolicyDiv.setAttribute("style", "margin-bottom:30px;")
+var BHLPolicyLabel = document.createElement("h2");
 var BHLLogo = document.createElement("img");
 var BHLPolicyText = document.createTextNode("BHL Policy");
 BHLPolicyLabel.setAttribute("style", "font-size:x-large;line-height:2");
