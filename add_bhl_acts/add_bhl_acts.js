@@ -4,6 +4,10 @@
 // @description Allows archivists to add BHL-specific acts to Archivematica PREMIS Rights Statements.
 // @include     http://sandbox.archivematica.org/transfer/*/rights/grants/*/
 // @include     http://sandbox.archivematica.org/ingest/*/rights/grants/*/
+// @include     http://missy.qa.archivematica.org/transfer/*/rights/grants/*/
+// @include     http://missy.qa.archivematica.org/ingest/*/rights/grants/*/
+// @include     http://rumble.umdl.umich.edu/transfer/*/rights/grants/*/
+// @include     http://rumble.umdl.umich.edu/ingest/*/rights/grants/*/
 // @version     1
 // @grant       none
 // ==/UserScript==
@@ -146,6 +150,11 @@ function add_bentleystaff_item_bentleystaff_bitstream_act_with_accession_date()
 
     // Should add some error checking here...
     var accession_date = prompt("Please enter the accession date: ", "YYYY-MM-DD");
+    var pattern = /\d{4}-\d{2}?-\d{2}?/;
+    var result = pattern.test(accession_date);
+    if (result == false) {
+        accession_date = prompt("Please enter a valid (YYYY-MM-DD) date: ", "YYYY-MM-DD");
+    };
 
     var add_start=document.getElementById("id_rightsstatementrightsgranted_set-0-startdate");
     add_start.value=accession_date;
@@ -173,6 +182,11 @@ function add_bentleystaff_item_bentleystaff_bitstream_act_PR()
 
     // Should add some error checking here...
     var creation_date = prompt("Please enter the creation date: ", "YYYY-MM-DD");
+    var pattern = /\d{4}-\d{2}?-\d{2}?/;
+    var result = pattern.test(accession_date);
+    if (result == false) {
+        accession_date = prompt("Please enter a valid (YYYY-MM-DD) date: ", "YYYY-MM-DD");
+    };
 
     var add_start=document.getElementById("id_rightsstatementrightsgranted_set-0-startdate");
     add_start.value=creation_date;
@@ -200,6 +214,11 @@ function add_bentleystaff_item_bentleystaff_bitstream_act_SR()
 
     // Should add some error checking here...
     var creation_date = prompt("Please enter the creation date: ", "YYYY-MM-DD");
+    var pattern = /\d{4}-\d{2}?-\d{2}?/;
+    var result = pattern.test(accession_date);
+    if (result == false) {
+        accession_date = prompt("Please enter a valid (YYYY-MM-DD) date: ", "YYYY-MM-DD");
+    };
 
     var add_start=document.getElementById("id_rightsstatementrightsgranted_set-0-startdate");
     add_start.value=creation_date;
@@ -227,6 +246,11 @@ function add_bentleystaff_item_bentleystaff_bitstream_act_CR()
 
     // Should add some error checking here...
     var creation_date = prompt("Please enter the creation date: ", "YYYY-MM-DD");
+    var pattern = /\d{4}-\d{2}?-\d{2}?/;
+    var result = pattern.test(accession_date);
+    if (result == false) {
+        accession_date = prompt("Please enter a valid (YYYY-MM-DD) date: ", "YYYY-MM-DD");
+    };
 
     var add_start=document.getElementById("id_rightsstatementrightsgranted_set-0-startdate");
     add_start.value=creation_date;
