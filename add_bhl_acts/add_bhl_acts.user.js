@@ -153,6 +153,7 @@ function add_bentleystaff_item_bentleystaff_bitstream_act_with_accession_date()
         var pattern = /\d{4}-\d{2}?-\d{2}?/;
         var result = pattern.test(accession_date);
         if (result == false) {
+            alert("Please enter a *valid* date (YYYY-MM-DD, YYYY-MM or YYYY)");
             continue;
         } else {
            break;
@@ -188,6 +189,7 @@ function add_bentleystaff_item_bentleystaff_bitstream_act_PR()
         var pattern = /\d{4}-\d{2}?-\d{2}?/;
         var result = pattern.test(creation_date);
         if (result == false) {
+            alert("Please enter a *valid* date (YYYY-MM-DD, YYYY-MM or YYYY)");
             continue;
         } else {
            break;
@@ -223,6 +225,7 @@ function add_bentleystaff_item_bentleystaff_bitstream_act_SR()
         var pattern = /\d{4}-\d{2}?-\d{2}?/;
         var result = pattern.test(creation_date);
         if (result == false) {
+            alert("Please enter a *valid* date (YYYY-MM-DD, YYYY-MM or YYYY)");
             continue;
         } else {
            break;
@@ -258,6 +261,7 @@ function add_bentleystaff_item_bentleystaff_bitstream_act_CR()
         var pattern = /\d{4}-\d{2}?-\d{2}?/;
         var result = pattern.test(creation_date);
         if (result == false) {
+            alert("Please enter a *valid* date (YYYY-MM-DD, YYYY-MM or YYYY)");
             continue;
         } else {
            break;
