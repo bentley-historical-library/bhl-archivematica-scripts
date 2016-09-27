@@ -86,7 +86,7 @@ function add_anonymous_item_bentley_only_users_bitstream_act()
 
     // Also a better way to do this...
     var add_restriction_note=document.getElementsByTagName("textarea")[0];
-    add_restriction_note.value="Access to this material is restricted to the reading room of the Bentley Historical Library.";
+    add_restriction_note.value="Reading-Room Only: Access to this material is restricted to the reading room of the Bentley Historical Library.";
 }
 
 // University of Michigan
@@ -110,7 +110,7 @@ function add_anonymous_item_um_users_bitstream_act()
 
     // Also a better way to do this...
     var add_restriction_note=document.getElementsByTagName("textarea")[0];
-    add_restriction_note.value="This material may only be accessed by students, faculty, and staff of the University of Michigan.";
+    add_restriction_note.value="UM Only: This material may only be accessed by students, faculty, and staff of the University of Michigan.";
 }
 
 // Bentley Digital Media Library
@@ -134,7 +134,7 @@ function add_anonymous_item_bentleystaff_bitstream_act()
 
     // Also a better way to do this...
     var add_restriction_note=document.getElementsByTagName("textarea")[0];
-    add_restriction_note.value="This recording may be protected by copyright law. Access to this material is restricted to the reading room of the Bentley Historical Library.";
+    add_restriction_note.value="Streaming Only: This recording may be protected by copyright law. Access to this material is restricted to the reading room of the Bentley Historical Library.";
 }
 
 // Bentley Policies
