@@ -8,9 +8,33 @@
 // @include     http://missy.qa.archivematica.org/ingest/*/rights/grants/*/
 // @include     http://rumble.umdl.umich.edu/transfer/*/rights/grants/*/
 // @include     http://rumble.umdl.umich.edu/ingest/*/rights/grants/*/
+// @include     http://rumble.umdl.umich.edu/appraisal/
 // @version     1
 // @grant       none
 // ==/UserScript==
+
+var usernameElement = document.getElementById("dropdownUser");
+var username = usernameElement.text.trim();
+
+if (username == "dproud") {
+   alert("Hi Devon. Please be careful.");
+   appraisalTab = document.querySelectorAll('[ng-app="appraisalTab"]')[0];
+   img = document.createElement("img");
+   src = document.createAttribute("src");
+   src.value = "https://media.giphy.com/media/9p87NPGhZXAaI/giphy.gif";
+   img.setAttributeNode(src);
+   appraisalTab.parentNode.replaceChild(img, appraisalTab);
+}
+
+if (username == "shallcro") {
+   alert("Hey Mike. Please be careful.");
+   appraisalTab = document.querySelectorAll('[ng-app="appraisalTab"]')[0];
+   img = document.createElement("img");
+   src = document.createAttribute("src");
+   src.value = "http://theworldsbestever.s3.amazonaws.com/blog/wp-content/uploads/2014/02/yachty-by-nature.jpg";
+   img.setAttributeNode(src);
+   appraisalTab.parentNode.replaceChild(img, appraisalTab);
+}
 
 var BHLPolicyDiv = document.createElement("div");
 BHLPolicyDiv.setAttribute("style", "margin-bottom:30px;")
