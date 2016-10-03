@@ -13,50 +13,6 @@
 // @grant       none
 // ==/UserScript==
 
-var usernameElement = document.getElementById("dropdownUser");
-var username = usernameElement.text.trim();
-
-// 
-// 
-// 
-// The following was developed by archivists and the Bentley Historical Library.
-// 
-// 
-// Feel free to use what you like,
-// but be sure to give us a shout out!
-// 
-// 
-// 1150 Beal Avenue Ann Arbor, MI 48109-2113 U.S.A.
-// 
-// 
-// 734-764-3482
-// 
-// 
-// Note: You'll need to change the @include above to fit your URLs
-// 
-// 
-// 
-
-if (username == "dproud") {
-   alert("Hi Devon. Please be careful.");
-   appraisalTab = document.querySelectorAll('[ng-app="appraisalTab"]')[0];
-   img = document.createElement("img");
-   src = document.createAttribute("src");
-   src.value = "https://media.giphy.com/media/9p87NPGhZXAaI/giphy.gif";
-   img.setAttributeNode(src);
-   appraisalTab.parentNode.replaceChild(img, appraisalTab);
-}
-
-if (username == "shallcro") {
-   alert("Hey Mike. Please be careful.");
-   appraisalTab = document.querySelectorAll('[ng-app="appraisalTab"]')[0];
-   img = document.createElement("img");
-   src = document.createAttribute("src");
-   src.value = "http://theworldsbestever.s3.amazonaws.com/blog/wp-content/uploads/2014/02/yachty-by-nature.jpg";
-   img.setAttributeNode(src);
-   appraisalTab.parentNode.replaceChild(img, appraisalTab);
-}
-
 var BHLPolicyDiv = document.createElement("div");
 BHLPolicyDiv.setAttribute("style", "margin-bottom:30px;")
 var BHLPolicyLabel = document.createElement("h2");
