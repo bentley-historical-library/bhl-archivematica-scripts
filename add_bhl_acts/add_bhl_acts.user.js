@@ -8,7 +8,8 @@
 // @include     http://missy.qa.archivematica.org/ingest/*/rights/grants/*/
 // @include     http://rumble.umdl.umich.edu/transfer/*/rights/grants/*/
 // @include     http://rumble.umdl.umich.edu/ingest/*/rights/grants/*/
-// @include     http://rumble.umdl.umich.edu/appraisal/
+// @include     http://threehearted.umdl.umich.edu/transfer/*/rights/grants/*/
+// @include     http://threehearted.umdl.umich.edu/ingest/*/rights/grants/*/
 // @version     1
 // @grant       none
 // ==/UserScript==
