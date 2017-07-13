@@ -27,7 +27,7 @@ for root, _, files in os.walk(config['aip_storage']['path']):
 # premis in mets in archivematica
 for name in os.listdir('working_copy'):
     aip_uuid = '-'.join(name.split('-')[-5:])
-    tree = etree.parse(os.path.join('working_copy', name, 'data', 'METS.' + aip_uuid + ".xml"))
+    tree = etree.parse(os.path.join('working_copy', name, 'data', 'METS.' + aip_uuid + '.xml'))
     
     act = random.choice(tree.xpath('//premis:act', namespaces={'premis': 'info:lc/xmlns/premis-v2'})).text
     restriction = random.choice(tree.xpath('//premis:restriction', namespaces={'premis': 'info:lc/xmlns/premis-v2'})).text
@@ -95,13 +95,15 @@ for name in os.listdir('working_copy'):
     token = response.json().get('session')
  
     print '\n'
+    print '***'
     archival_object_id = input('Enter the ArchivesSpace Archival Object ID for ' + name + ': ')
-    print '\n'
+    print '***'
     
     url = config['archivesspace']['base_url'] + '/repositories/' + config['archivesspace']['repository'] + '/archival_objects/' + str(archival_object_id)
     headers = {'X-ArchivesSpace-Session': token}
     response = requests.get(url, headers=headers)
     archival_object = response.json()
+    
     title = archival_object.get('display_string', '')
     
     description_abstract = ''
@@ -116,7 +118,6 @@ for name in os.listdir('working_copy'):
     url = config['archivesspace']['base_url'] + archival_object['resource']['ref']
     response = requests.get(url, headers=headers)
     resource = response.json()
-
     for linked_agent in resource['linked_agents'] :
         if linked_agent['role'] == 'creator':
             url = config['archivesspace']['base_url'] + linked_agent['ref']
@@ -138,9 +139,60 @@ for name in os.listdir('working_copy'):
     relation_ispartofseries.reverse()
     relation_ispartofseries = ' - '.join(relation_ispartofseries)
  
-    # rest api - dspace 5.x documentation
+    # post item and bitstreams to dspace
+    deepblue = DAPPr(
+        dev.get('base_url'),
+        dev.get('email'),
+        dev.get('password'), 
+    )
+   
+    print '\n'
+    print '***'
+    collection_id = input('Enter the DSpace Collection ID: ')
+    print '***'
+    
+    item = {
+        'name': title
+    }
+    item = deepblue.post_collection_item(int(collection_id), item)
+    item_id = item['id']
+    item_handle = item['handle']
+    
+    metadata = [
+        {'key': 'dc.title', 'value': title},
+        {'key': 'dc.description.abstract', 'value': description_abstract},
+        {'key': 'dc.rights.access', 'value': rights_access},
+        {'key': 'dc.contributor.author', 'value': contributor_author},
+        {'key': 'dc.date.issued', 'value': date_issued},
+        {'key': 'dc.rights.copyright', 'value': rights_copyright},
+        {'key': 'dc.relation.ispartofseries', 'value': relation_ispartofseries},
+    ]
+    deepblue.put_item_metadata(int(item_id), metadata)
+    
+    for bitstream in os.listdir(os.path.join('working_copy', name)):
+        if bitstream.startswith('objects'):
+            bitstream = deepblue.post_item_bitstream(int(item_id), os.path.join('working_copy', name, bitstream))
+            bitstream_id = bitstream['id']
+            
+            bitstream['name'] = 'objects.zip'
+            bitstream['description'] = 'Archival materials.'
+            deepblue.put_bitstream(int(bitstream_id), bitstream)
+            
+        elif bitstream.startswith('metadata'):
+            bitstream = deepblue.post_item_bitstream(int(item_id), os.path.join('working_copy', name, bitstream))
+            bitstream_id = bitstream['id']
+            
+            bitstream['name'] = 'metadata.zip'
+            bitstream['description'] = 'Administrative information. Access restricted to Bentley staff.'
+            deepblue.put_bitstream(int(bitstream_id), bitstream)
+            
+            deepblue.put_bitstream_policy(int(bitstream_id), [{"action": "READ", "rpType": "TYPE_CUSTOM", "groupId": config['dspace']['metadata_group_id']}])
+            
+    deepblue.post_item_license(int(item_id))
     
     # update archivesspace digital object
+    
+    # slack notification
 
 # clean up, clean up, everbody do your part
 '''
