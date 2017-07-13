@@ -1,7 +1,11 @@
 import configparser
+from dappr.dappr import DAPPr
+from dappr.config import dev
+from datetime import datetime
 from lxml import etree
 import os
 import random
+import requests
 import shutil
 import subprocess
 
@@ -84,7 +88,56 @@ for name in os.listdir('working_copy'):
             shutil.rmtree(os.path.join('working_copy', name, item))
         elif item in ['bag-info.txt', 'bagit.txt', 'manifest-sha256.txt', 'tagmanifest-md5.txt']:
             os.remove(os.path.join('working_copy', name, item))
-        
+    
+    # get archivesspace archival object descriptive metadata
+    url = config['archivesspace']['base_url'] + '/users/' + config['archivesspace']['user'] + '/login?password=' + config['archivesspace']['password']
+    response = requests.post(url)
+    token = response.json().get('session')
+ 
+    print '\n'
+    archival_object_id = input('Enter the ArchivesSpace Archival Object ID for ' + name + ': ')
+    print '\n'
+    
+    url = config['archivesspace']['base_url'] + '/repositories/' + config['archivesspace']['repository'] + '/archival_objects/' + str(archival_object_id)
+    headers = {'X-ArchivesSpace-Session': token}
+    response = requests.get(url, headers=headers)
+    archival_object = response.json()
+    title = archival_object.get('display_string', '')
+    
+    description_abstract = ''
+    rights_access = ''
+    for note in archival_object['notes']:
+        if note['type'] == 'odd':
+            description_abstract = note['subnotes'][0]['content']
+        elif note['type'] == 'accessrestrict':
+            rights_access = note['subnotes'][0]['content']
+    
+    contributor_author = ''
+    url = config['archivesspace']['base_url'] + archival_object['resource']['ref']
+    response = requests.get(url, headers=headers)
+    resource = response.json()
+
+    for linked_agent in resource['linked_agents'] :
+        if linked_agent['role'] == 'creator':
+            url = config['archivesspace']['base_url'] + linked_agent['ref']
+            response = requests.get(url, headers=headers)
+            creator = response.json()
+            contributor_author = creator['title']
+    
+    date_issued = str(datetime.now().year)
+    
+    rights_copyright = 'This content may be under copyright. Researchers are responsible for determining the appropriate use or reuse of materials. Please consult the collection finding aid or catalog record for more information.'
+    
+    relation_ispartofseries = []
+    while archival_object.get('parent'):
+        url = config['archivesspace']['base_url'] + archival_object['parent']['ref']
+        response = requests.get(url, headers=headers)
+        parent_archival_object = response.json()
+        relation_ispartofseries.append(parent_archival_object['display_string'])
+        archival_object = parent_archival_object
+    relation_ispartofseries.reverse()
+    relation_ispartofseries = ' - '.join(relation_ispartofseries)
+ 
     # rest api - dspace 5.x documentation
     
     # update archivesspace digital object
