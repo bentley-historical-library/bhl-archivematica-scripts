@@ -32,6 +32,7 @@ for name in os.listdir('working_copy'):
     act = random.choice(tree.xpath('//premis:act', namespaces={'premis': 'info:lc/xmlns/premis-v2'})).text
     restriction = random.choice(tree.xpath('//premis:restriction', namespaces={'premis': 'info:lc/xmlns/premis-v2'})).text
     rights_granted_note = random.choice(tree.xpath('//premis:rightsGrantedNote', namespaces={'premis': 'info:lc/xmlns/premis-v2'})).text
+    end_date = random.choice(tree.xpath('//premis:endDate', namespaces={'premis': 'info:lc/xmlns/premis-v2'})).text
     
     item_group = 'Anonymous'
     bitstream_group = 'Anonymous'
@@ -167,6 +168,11 @@ for name in os.listdir('working_copy'):
         {'key': 'dc.rights.copyright', 'value': rights_copyright},
         {'key': 'dc.relation.ispartofseries', 'value': relation_ispartofseries},
     ]
+    if item_group == 'BentleyStaff':
+        metadata.extend([
+            {'key': 'dc.date.open', 'value': end_date},
+            {'key': 'dc.description.restriction', 'value': 'RESTRICTED'},
+        ])
     deepblue.put_item_metadata(int(item_id), metadata)
     
     for bitstream in os.listdir(os.path.join('working_copy', name)):
@@ -175,8 +181,20 @@ for name in os.listdir('working_copy'):
             bitstream_id = bitstream['id']
             
             bitstream['name'] = 'objects.zip'
-            bitstream['description'] = 'Archival materials.'
+            if bitstream_group == 'Bentley Only Users':
+                bitstream['description'] = 'Archival materials. Access restricted to Bentley Reading Room.'
+            elif bitstream_group == 'UM Users':
+                bitstream['description'] = 'Archival materials. Access restricted to UM Users.'
+            elif bitstream_group == 'BentleyStaff':
+                bitstream['description'] = 'Archival materials. Access restricted to Bentley staff.'
             deepblue.put_bitstream(int(bitstream_id), bitstream)
+            
+            if bitstream_group == 'Bentley Only Users':
+                deepblue.put_bitstream_policy(int(bitstream_id), [{"action": "READ", "rpType": "TYPE_CUSTOM", "groupId": 1002}])
+            elif bitstream_group == 'UM Users':
+                deepblue.put_bitstream_policy(int(bitstream_id), [{"action": "READ", "rpType": "TYPE_CUSTOM", "groupId": 80}])
+            elif bitstream_group == 'BentleyStaff':
+                deepblue.put_bitstream_policy(int(bitstream_id), [{"action": "READ", "rpType": "TYPE_CUSTOM", "groupId": 1335}])
             
         elif bitstream.startswith('metadata'):
             bitstream = deepblue.post_item_bitstream(int(item_id), os.path.join('working_copy', name, bitstream))
@@ -189,7 +207,10 @@ for name in os.listdir('working_copy'):
             deepblue.put_bitstream_policy(int(bitstream_id), [{"action": "READ", "rpType": "TYPE_CUSTOM", "groupId": config['dspace']['metadata_group_id']}])
             
     deepblue.post_item_license(int(item_id))
-    
+
+    if item_group == 'BentleyStaff':
+        deepblue.put_item_policy(int(item_id), [{"action": "READ", "rpType": "TYPE_CUSTOM", "groupId": 1335}])
+
     # update archivesspace digital object
     
     # slack notification
