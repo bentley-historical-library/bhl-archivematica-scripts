@@ -22,7 +22,7 @@ var BHLPolicyText = document.createTextNode("BHL Policy");
 BHLPolicyLabel.setAttribute("style", "font-size:x-large;line-height:2");
 BHLPolicyLabel.appendChild(BHLPolicyText);
 BHLLogo.setAttribute("style", "float:left;margin-right:15px");
-BHLLogo.setAttribute("src", "https://pbs.twimg.com/profile_images/478956760686796800/1tTSRTdz_400x400.jpeg");
+BHLLogo.setAttribute("src", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQdtncuOpx2mLjmJ6fO5oE8KS313MBMnVygeIRINj4HV3jJ8YeL");
 BHLPolicyLabel.appendChild(BHLLogo);
 BHLPolicyDiv.appendChild(BHLPolicyLabel);
 
