@@ -1,28 +1,33 @@
 import configparser
-from dappr.dappr import DAPPr
-from dappr.config import dev
+from dappr import DAPPr
+from config import prod
 from datetime import datetime
 from lxml import etree
 import os
 import random
 import requests
+from selenium import webdriver
 import shutil
 import subprocess
 
 config = configparser.ConfigParser()
 config.read('config.ini')
 
+# TODO logging
+
 # creating a working copy
 os.mkdir('working_copy')
 for root, _, files in os.walk(config['aip_storage']['path']):
     for name in files:
         command = [
-            os.path.join('unar1.8.1_win', 'unar.exe'),
+            'unar',
             '-force-overwrite', 
             '-output-directory', 'working_copy',
             os.path.join(root, name)
         ]
         subprocess.check_call(command)
+        
+bentleystaff_items = []
 
 # premis in mets in archivematica
 for name in os.listdir('working_copy'):
@@ -33,15 +38,17 @@ for name in os.listdir('working_copy'):
     restriction = random.choice(tree.xpath('//premis:restriction', namespaces={'premis': 'info:lc/xmlns/premis-v2'})).text
     rights_granted_note = random.choice(tree.xpath('//premis:rightsGrantedNote', namespaces={'premis': 'info:lc/xmlns/premis-v2'})).text
     end_date = random.choice(tree.xpath('//premis:endDate', namespaces={'premis': 'info:lc/xmlns/premis-v2'})).text
-    
+
     item_group = 'Anonymous'
     bitstream_group = 'Anonymous'
+
     if act == 'disseminate' and restriction == 'Disallow':
         item_group = 'BentleyStaff'
         bitstream_group = 'BentleyStaff'
     elif act == 'disseminate' and restriction == 'Conditional':
         if 'Reading-Room Only' in rights_granted_note:
             bitstream_group = 'Bentley Only Users'
+        # TODO add mivideo ID if necessary--make digital object unpublished
         elif 'Streaming Only' in rights_granted_note:
             bitstream_group = 'BentleyStaff'
         elif 'UM Only' in rights_granted_note:
@@ -55,7 +62,7 @@ for name in os.listdir('working_copy'):
         os.rename(os.path.join('working_copy', name, 'data', 'objects', item), os.path.join('working_copy', name, 'objects', item))
     os.chdir(os.path.join('working_copy', name))
     command = [
-        os.path.join('..', '..', '7-Zip', '7z.exe'), 'a',
+        '7z', 'a',
         '-bd',
         '-tzip',
         '-y',
@@ -70,7 +77,7 @@ for name in os.listdir('working_copy'):
     
     os.chdir('working_copy')
     command = [
-        os.path.join('..', '7-Zip', '7z.exe'), 'a',
+        '7z', 'a',
         '-bd',
         '-tzip',
         '-y',
@@ -91,15 +98,16 @@ for name in os.listdir('working_copy'):
             os.remove(os.path.join('working_copy', name, item))
     
     # get archivesspace archival object descriptive metadata
+    print "\n"
+    print '***'
+    # TODO parse the archival object url
+    archival_object_id = input('Enter the ArchivesSpace Archival Object ID for ' + name + ': ')
+    print '***' 
+
     url = config['archivesspace']['base_url'] + '/users/' + config['archivesspace']['user'] + '/login?password=' + config['archivesspace']['password']
     response = requests.post(url)
     token = response.json().get('session')
  
-    print '\n'
-    print '***'
-    archival_object_id = input('Enter the ArchivesSpace Archival Object ID for ' + name + ': ')
-    print '***'
-    
     url = config['archivesspace']['base_url'] + '/repositories/' + config['archivesspace']['repository'] + '/archival_objects/' + str(archival_object_id)
     headers = {'X-ArchivesSpace-Session': token}
     response = requests.get(url, headers=headers)
@@ -142,13 +150,14 @@ for name in os.listdir('working_copy'):
  
     # post item and bitstreams to dspace
     deepblue = DAPPr(
-        dev.get('base_url'),
-        dev.get('email'),
-        dev.get('password'), 
+        prod.get('base_url'),
+        prod.get('email'),
+        prod.get('password'), 
     )
    
     print '\n'
     print '***'
+    # TODO get the collection id from the handle
     collection_id = input('Enter the DSpace Collection ID: ')
     print '***'
     
@@ -190,14 +199,15 @@ for name in os.listdir('working_copy'):
             deepblue.put_bitstream(int(bitstream_id), bitstream)
             
             if bitstream_group == 'Bentley Only Users':
-                deepblue.put_bitstream_policy(int(bitstream_id), [{"action": "READ", "rpType": "TYPE_CUSTOM", "groupId": 1002}])
+                deepblue.put_bitstream_policy(int(bitstream_id), [{"action": "READ", "rpType": "TYPE_CUSTOM", "groupId": 474}])
             elif bitstream_group == 'UM Users':
-                deepblue.put_bitstream_policy(int(bitstream_id), [{"action": "READ", "rpType": "TYPE_CUSTOM", "groupId": 80}])
+                deepblue.put_bitstream_policy(int(bitstream_id), [{"action": "READ", "rpType": "TYPE_CUSTOM", "groupId": 20}])
             elif bitstream_group == 'BentleyStaff':
-                deepblue.put_bitstream_policy(int(bitstream_id), [{"action": "READ", "rpType": "TYPE_CUSTOM", "groupId": 1335}])
+                deepblue.put_bitstream_policy(int(bitstream_id), [{"action": "READ", "rpType": "TYPE_CUSTOM", "groupId": 560}])
             
         elif bitstream.startswith('metadata'):
             bitstream = deepblue.post_item_bitstream(int(item_id), os.path.join('working_copy', name, bitstream))
+            
             bitstream_id = bitstream['id']
             
             bitstream['name'] = 'metadata.zip'
@@ -209,15 +219,37 @@ for name in os.listdir('working_copy'):
     deepblue.post_item_license(int(item_id))
 
     if item_group == 'BentleyStaff':
-        deepblue.put_item_policy(int(item_id), [{"action": "READ", "rpType": "TYPE_CUSTOM", "groupId": 1335}])
+        bentleystaff_items.append(item_handle)
+        # email jose
+        # TODO figure this out--Edit Collection --> Assign Roles --> Edit authorization policies directly
 
     # update archivesspace digital object
+    url = config['archivesspace']['base_url'] + '/repositories/' + config['archivesspace']['repository'] + '/archival_objects/' + str(archival_object_id)
+    response = requests.get(url, headers=headers)
+    archival_object = response.json()
     
-    # slack notification
+    for instance in archival_object['instances']:
+        url = config['archivesspace']['base_url'] + instance['digital_object']['ref']
+        response = requests.get(url, headers=headers)
+        digital_object = response.json()
+        if digital_object['created_by'] == 'archivematica':
+            digital_object['file_versions'] = [
+                {
+                    'file_uri': 'http://hdl.handle.net/' + item_handle,
+                    'xlink_show_attribute': 'new',
+                    'xlink_actuate_attribute': 'onRequest'
+                }
+            ]
+            
+            response = requests.post(url, headers=headers, json=digital_object)
+    
+    # TODO logout of archivesspace
+    
+    # TODO slack notification
 
 # clean up, clean up, everbody do your part
-'''
 shutil.rmtree('working_copy')
+'''
 for root, dirs, _ in os.walk(config['aip_storage']['path']):
     for dir in dirs:
         shutil.rmtree(os.path.join(root, dir))'''
