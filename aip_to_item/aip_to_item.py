@@ -233,6 +233,7 @@ for name in os.listdir('working_copy'):
         response = requests.get(url, headers=headers)
         digital_object = response.json()
         if digital_object['created_by'] == 'archivematica':
+            digital_object['publish'] = False
             digital_object['file_versions'] = [
                 {
                     'file_uri': 'http://hdl.handle.net/' + item_handle,
